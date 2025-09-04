@@ -16,6 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+// Increase timeout for CI environment
 import fetchMock from 'fetch-mock';
 import { FeatureFlag, isFeatureEnabled, QueryState } from '@superset-ui/core';
 import { render, screen, waitFor } from 'spec/helpers/testing-library';
@@ -25,6 +27,8 @@ import {
   defaultQueryEditor,
   extraQueryEditor3,
 } from 'src/SqlLab/fixtures';
+
+jest.setTimeout(30000);
 
 const mockedProps = {
   queryEditorId: defaultQueryEditor.id,

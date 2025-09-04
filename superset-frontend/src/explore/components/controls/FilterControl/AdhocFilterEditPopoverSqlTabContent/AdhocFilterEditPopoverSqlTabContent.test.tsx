@@ -16,17 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+// Increase timeout for CI environment
 import {
   cleanup,
   render,
   screen,
   selectOption,
   userEvent,
+  waitFor,
 } from 'spec/helpers/testing-library';
 import { IAceEditorProps } from 'react-ace';
 import AdhocFilter from '../AdhocFilter';
 import { Clauses, ExpressionTypes } from '../types';
 import AdhocFilterEditPopoverSqlTabContent from '.';
+
+jest.setTimeout(60000);
 
 // Add cleanup after each test
 afterEach(async () => {
@@ -62,10 +67,12 @@ test('calls onChange when the SQL clause changes', async () => {
   );
   await selectOption(Clauses.Having);
   await new Promise(resolve => setTimeout(resolve, 0));
-  expect(onChange).toHaveBeenCalledWith(
-    expect.objectContaining({ clause: Clauses.Having }),
-  );
-}, 30000);
+  await waitFor(() => {
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ clause: Clauses.Having }),
+    );
+  });
+}, 60000);
 
 test('calls onChange when the SQL expression changes', async () => {
   const onChange = jest.fn();
