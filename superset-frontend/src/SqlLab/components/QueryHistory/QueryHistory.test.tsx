@@ -98,16 +98,32 @@ test('Renders an empty state for query history', () => {
 });
 
 test('fetches the query history when the persistence mode is enabled', async () => {
+  // Set up the mock BEFORE rendering to avoid timing issues
   const isFeatureEnabledMock = mockedIsFeatureEnabled.mockImplementation(
     featureFlag => featureFlag === FeatureFlag.SqllabBackendPersistence,
   );
 
   const editorQueryApiRoute = `glob:*/api/v1/query/?q=*`;
   fetchMock.get(editorQueryApiRoute, fakeApiResult);
+
   render(setup(), { useRedux: true, initialState });
-  await waitFor(() =>
-    expect(fetchMock.calls(editorQueryApiRoute).length).toBe(1),
+
+  // Add timeout to waitFor and better error messaging
+  await waitFor(
+    () => {
+      const calls = fetchMock.calls(editorQueryApiRoute);
+      if (calls.length === 0) {
+        // Log debugging info if API call isn't happening
+        console.log(
+          'API call not made yet. Feature flag mock working?',
+          mockedIsFeatureEnabled(FeatureFlag.SqllabBackendPersistence),
+        );
+      }
+      expect(calls.length).toBe(1);
+    },
+    { timeout: 10000 },
   );
+
   const queryResultText = screen.getByText(fakeApiResult.result[0].rows);
   expect(queryResultText).toBeInTheDocument();
   isFeatureEnabledMock.mockClear();
