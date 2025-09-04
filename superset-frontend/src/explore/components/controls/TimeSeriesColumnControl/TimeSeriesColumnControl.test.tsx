@@ -19,10 +19,10 @@
 import { render, screen, userEvent } from 'spec/helpers/testing-library';
 import TimeSeriesColumnControl from '.';
 
-jest.mock('lodash/debounce', () => (fn: Function & { cancel: Function }) => {
-  // eslint-disable-next-line no-param-reassign
-  fn.cancel = jest.fn();
-  return fn;
+jest.mock('lodash/debounce', () => (fn: Function) => {
+  const mockFn = (...args: any[]) => fn(...args);
+  mockFn.cancel = jest.fn();
+  return mockFn;
 });
 
 test('renders with default props', () => {
@@ -121,12 +121,21 @@ test('triggers onChange when color bounds changes', async () => {
   const onChange = jest.fn();
   render(<TimeSeriesColumnControl colType="time" onChange={onChange} />);
   await userEvent.click(screen.getByRole('img', { name: 'edit' }));
-  const minInput = screen.getByPlaceholderText('Min');
-  const maxInput = screen.getByPlaceholderText('Max');
+
+  // Find spinbutton inputs like BoundsControl test does
+  const inputs = screen.getAllByRole('spinbutton');
+  const minInput = inputs[0]; // First spinbutton should be Min
+  const maxInput = inputs[1]; // Second spinbutton should be Max
+
+  // Use userEvent.type like BoundsControl test
   await userEvent.clear(minInput);
   await userEvent.type(minInput, min.toString());
   await userEvent.clear(maxInput);
   await userEvent.type(maxInput, max.toString());
+
+  // Wait a bit for debounced onChange to complete
+  await new Promise(resolve => setTimeout(resolve, 400));
+
   expect(onChange).not.toHaveBeenCalled();
   await userEvent.click(screen.getByRole('button', { name: 'Save' }));
   expect(onChange).toHaveBeenLastCalledWith(
@@ -214,11 +223,21 @@ test('triggers onChange when Y-axis bounds changes', async () => {
   const onChange = jest.fn();
   render(<TimeSeriesColumnControl colType="spark" onChange={onChange} />);
   await userEvent.click(screen.getByRole('img', { name: 'edit' }));
-  const minInput = screen.getByPlaceholderText('Min');
-  const maxInput = screen.getByPlaceholderText('Max');
+
+  // Find spinbutton inputs like BoundsControl test does
+  const inputs = screen.getAllByRole('spinbutton');
+  const minInput = inputs[0]; // First spinbutton should be Min
+  const maxInput = inputs[1]; // Second spinbutton should be Max
+
+  // Use userEvent.type like BoundsControl test
+  await userEvent.clear(minInput);
   await userEvent.type(minInput, min.toString());
   await userEvent.clear(maxInput);
   await userEvent.type(maxInput, max.toString());
+
+  // Wait a bit for debounced onChange to complete
+  await new Promise(resolve => setTimeout(resolve, 400));
+
   expect(onChange).not.toHaveBeenCalled();
   await userEvent.click(screen.getByRole('button', { name: 'Save' }));
   expect(onChange).toHaveBeenCalledWith(
