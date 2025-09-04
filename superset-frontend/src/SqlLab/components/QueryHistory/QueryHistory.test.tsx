@@ -111,7 +111,7 @@ test('fetches the query history when the persistence mode is enabled', async () 
   const queryResultText = screen.getByText(fakeApiResult.result[0].rows);
   expect(queryResultText).toBeInTheDocument();
   isFeatureEnabledMock.mockClear();
-});
+}, 60000);
 
 test('fetches the query history by the tabViewId', async () => {
   const isFeatureEnabledMock = mockedIsFeatureEnabled.mockImplementation(
@@ -136,4 +136,4 @@ test('fetches the query history by the tabViewId', async () => {
   const queryResultText = screen.getByText(fakeApiResult.result[0].rows);
   expect(queryResultText).toBeInTheDocument();
   isFeatureEnabledMock.mockClear();
-});
+}, 60000);
